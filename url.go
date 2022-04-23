@@ -23,7 +23,7 @@ func Site(country string) (url string, err error) {
 	case CountryUS:
 		url = "https://www.amazon.com"
 	default:
-		err = fmt.Errorf("invalid country: %s", country)
+		err = fmt.Errorf("unknown country: %s", country)
 	}
 	return
 }
