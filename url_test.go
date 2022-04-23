@@ -18,7 +18,9 @@ func TestURL(t *testing.T) {
 		{"t2.1", "B092M62439", CountryUS, []string{}, "https://www.amazon.com/dp/B092M62439", false},
 		{"t2.2", "B092M62439", CountryUS, nil, "https://www.amazon.com/dp/B092M62439", false},
 		{"t2.3", "B092M62439", CountryUS, []string{"a=b"}, "https://www.amazon.com/dp/B092M62439?a=b", false},
-		{"t2.3", "B092M62439", CountryUS, []string{"?a=b"}, "https://www.amazon.com/dp/B092M62439?a=b", false},
+		{"t2.4", "B092M62439", CountryUS, []string{"?a=b"}, "https://www.amazon.com/dp/B092M62439?a=b", false},
+		{"t2.5", "B092M62439", CountryUS, []string{"?aod=1&", "&"}, "https://www.amazon.com/dp/B092M62439?aod=1", false},
+		{"t2.6", "B092M62439", CountryUS, []string{"&"}, "https://www.amazon.com/dp/B092M62439", false},
 	}
 	for _, testCase := range testCases {
 		url, err := URL(testCase.asin, testCase.country, testCase.queries...)

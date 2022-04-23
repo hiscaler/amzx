@@ -47,20 +47,28 @@ func URL(asin, country string, queries ...string) (url string, err error) {
 	n := len(queries)
 	if n > 0 {
 		sb.WriteRune('?')
-		for i, v := range queries {
+		for _, v := range queries {
 			v = strings.TrimSpace(v)
-			if v != "" {
-				switch v[0:1] {
-				case "?", "&":
-					v = v[1:]
-				}
-				sb.WriteString(v)
+			i := len(v)
+			if i == 0 || v == "&" || v == "?" {
+				continue
 			}
-			if n != i+1 {
-				sb.WriteRune('&')
+			firstChar := v[0:1]
+			if firstChar == "?" || firstChar == "&" {
+				v = v[1:]
+				i--
 			}
+			lastChar := v[i-1:]
+			if lastChar == "?" || lastChar == "&" {
+				v = v[0 : i-1]
+			}
+			sb.WriteString(v)
+			sb.WriteRune('&')
 		}
+		url = sb.String()
+		url = url[0 : len(url)-1]
+	} else {
+		url = sb.String()
 	}
-	url = sb.String()
 	return
 }
