@@ -44,8 +44,7 @@ func URL(asin, country string, queries ...string) (url string, err error) {
 	sb.WriteString(url)
 	sb.WriteString("/dp/")
 	sb.WriteString(asin)
-	n := len(queries)
-	if n > 0 {
+	if len(queries) > 0 {
 		sb.WriteRune('?')
 		for _, v := range queries {
 			v = strings.TrimSpace(v)
