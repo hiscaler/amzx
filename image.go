@@ -15,11 +15,16 @@ func OriginalImage(url string) string {
 	if n != 0 && url[n-2:n-1] != "/" {
 		name := path.Base(url)
 		firstIndex := strings.Index(name, ".")
+		if firstIndex == -1 {
+			return url
+		}
+
 		lastIndex := strings.LastIndex(name, ".")
 		if firstIndex == lastIndex {
 			// "." 不存在或者只有一个
 			return url
 		}
+
 		newName := name[0:firstIndex] + name[lastIndex:]
 		return strings.ReplaceAll(url, name, newName)
 	}
