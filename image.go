@@ -1,26 +1,27 @@
 package amzx
 
 import (
-	"fmt"
-	"net/url"
+	"path"
 	"strings"
 )
 
 // OriginalImage 获取原图地址
-func OriginalImage(imagePath string) string {
-	imagePath = strings.TrimSpace(imagePath)
-	if imagePath != "" {
-		u, err := url.Parse(imagePath)
-		if err == nil && u.Path != "" && strings.Index(u.Path, "/") != -1 {
-			paths := strings.Split(u.Path, "/")
-			filename := paths[len(paths)-1]
-			if strings.Index(filename, ".") != -1 {
-				pair := strings.Split(filename, ".")
-				if len(pair) >= 2 {
-					imagePath = strings.ReplaceAll(imagePath, filename, fmt.Sprintf("%s.%s", pair[0], pair[len(pair)-1]))
-				}
-			}
+// 该函数不会判断图片地址有效性，只会简单的将亚马逊正常的缩略图地址变成原图地址，比如：
+// 缩略图：https://images-na.ssl-images-amazon.com/images/I/41rjwBnXx5L._SY300_SX300_QL70_FMwebp_.jpg
+// 原图：https://images-na.ssl-images-amazon.com/images/I/41rjwBnXx5L.jpg
+func OriginalImage(url string) string {
+	url = strings.TrimSpace(url)
+	n := len(url)
+	if n != 0 && url[n-2:n-1] != "/" {
+		name := path.Base(url)
+		firstIndex := strings.Index(name, ".")
+		lastIndex := strings.LastIndex(name, ".")
+		if firstIndex == lastIndex {
+			// "." 不存在或者只有一个
+			return url
 		}
+		newName := name[0:firstIndex] + name[lastIndex:]
+		return strings.ReplaceAll(url, name, newName)
 	}
-	return imagePath
+	return url
 }

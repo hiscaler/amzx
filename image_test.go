@@ -11,6 +11,7 @@ func TestOriginalImagePath(t *testing.T) {
 		"https://images-na.ssl-images-amazon.com/1.jpg":                                                  "https://images-na.ssl-images-amazon.com/1.jpg",
 		"https://images-na.ssl-images-amazon.com/images/I/61S-VTI6XmL.__AC_SX300_SY300_QL70_FMwebp_.jpg": "https://images-na.ssl-images-amazon.com/images/I/61S-VTI6XmL.jpg",
 		"https://m.media-amazon.com/images/I/61czNd06BPS._AC_UY218_.jpg":                                 "https://m.media-amazon.com/images/I/61czNd06BPS.jpg",
+		"https://m.media-amazon.com/images/I/61czNd06BPS.jpg":                                            "https://m.media-amazon.com/images/I/61czNd06BPS.jpg",
 	}
 	for k, v := range images {
 		img := OriginalImage(k)
