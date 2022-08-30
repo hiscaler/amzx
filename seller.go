@@ -2,7 +2,6 @@ package amzx
 
 import (
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
 	"strings"
@@ -39,24 +38,25 @@ type SellerFeedback struct {
 	Lifetime     Feedback `json:"lifetime"`      // 所有
 }
 
-func (s Seller) FullAddress() string {
+func (s SellerInformation) FullAddress() string {
 	values := make([]string, 0)
-	if s.Information.Province != "" {
-		values = append(values, s.Information.Province)
+	if s.Province != "" {
+		values = append(values, s.Province)
 	}
-	if s.Information.City != "" {
-		values = append(values, s.Information.City)
+	if s.City != "" {
+		values = append(values, s.City)
 	}
-	if s.Information.Area != "" {
-		values = append(values, s.Information.Area)
+	if s.Area != "" {
+		values = append(values, s.Area)
 	}
-	if s.Information.Address != "" {
-		values = append(values, s.Information.Address)
+	if s.Address != "" {
+		values = append(values, s.Address)
 	}
-	if s.Information.Postcode != "" {
-		values = append(values, fmt.Sprintf(" [%s]", s.Information.Postcode))
+	sep := " "
+	if strings.ToLower(s.Country) == "cn" {
+		sep = ""
 	}
-	return strings.Join(values, "")
+	return strings.Join(values, sep)
 }
 
 func (s *Seller) Parse(html string) (*Seller, error) {
@@ -66,38 +66,68 @@ func (s *Seller) Parse(html string) (*Seller, error) {
 		feedback := SellerFeedback{}
 		replacer := strings.NewReplacer("%", "", "-", "")
 		if doc, e := goquery.NewDocumentFromReader(strings.NewReader(html)); e == nil {
+			// Information
+			addresses := make([]string, 0)
 			businessAddressIndex := -1
 			doc.Find("#page-section-detail-seller-info .a-row").Each(func(i int, selection *goquery.Selection) {
 				if i != 0 {
-					s := strings.TrimSpace(selection.Text())
-					fmt.Println(fmt.Sprintf("%d: %s", i, s))
+					value := strings.TrimSpace(selection.Text())
 					switch i {
 					case 1:
-						s = strings.NewReplacer("公司名称:", "", "Business Name:", "").Replace(s)
-						information.Name = strings.TrimSpace(s)
+						value = strings.NewReplacer("公司名称:", "", "Business Name:", "").Replace(value)
+						information.Name = strings.TrimSpace(value)
 					default:
-						if businessAddressIndex == -1 && (s == "Business Address:" || s == "公司地址:") {
+						if businessAddressIndex == -1 && (value == "Business Address:" || value == "公司地址:") {
 							businessAddressIndex = i + 1
-						}
-					}
-					if businessAddressIndex != -1 {
-						switch i {
-						case businessAddressIndex:
-							information.Address = s
-						case businessAddressIndex + 1:
-							information.Area = s
-						case businessAddressIndex + 2:
-							information.City = s
-						case businessAddressIndex + 3:
-							information.Province = s
-						case businessAddressIndex + 4:
-							information.Postcode = s
-						case businessAddressIndex + 5:
-							information.Country = s
+						} else if businessAddressIndex != -1 {
+							addresses = append(addresses, value)
 						}
 					}
 				}
 			})
+
+			if len(addresses) > 0 {
+				country := addresses[len(addresses)-1]
+				information.Country = country
+				switch strings.ToLower(country) {
+				case "cn":
+					for i, value := range addresses {
+						switch i {
+						case 0:
+							information.Address = value
+						case 1:
+							information.City = value
+						case 2:
+							information.Area = value
+						case 3:
+							information.Province = value
+						case 4:
+							information.Postcode = value
+						case 5:
+							information.Country = value
+						}
+					}
+				case "us":
+					for i, value := range addresses {
+						switch i {
+						case 0:
+							information.Address = value
+						case 1:
+							information.City = value
+						case 2:
+							information.Province = value
+						case 3:
+							information.Postcode = value
+						case 4:
+							information.Country = value
+						}
+					}
+				default:
+					information.Address = addresses[0]
+				}
+			}
+
+			// Feedback
 			doc.Find("#feedback-summary-table tr").Each(func(i int, selection *goquery.Selection) {
 				if i != 0 {
 					var v1, v2, v3, v4 float64
