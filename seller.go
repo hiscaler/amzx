@@ -59,14 +59,11 @@ func (s SellerInformation) FullAddress() string {
 	return strings.Join(values, sep)
 }
 
-func (s *Seller) Parse(html string) (*Seller, error) {
-	var err error
+func SellerParse(html string) (s Seller, err error) {
 	if html != "" {
-		var information SellerInformation
-		feedback := SellerFeedback{}
-		replacer := strings.NewReplacer("%", "", "-", "")
 		if doc, e := goquery.NewDocumentFromReader(strings.NewReader(html)); e == nil {
 			// Information
+			information := SellerInformation{}
 			addresses := make([]string, 0)
 			businessAddressIndex := -1
 			doc.Find("#page-section-detail-seller-info .a-row").Each(func(i int, selection *goquery.Selection) {
@@ -126,16 +123,18 @@ func (s *Seller) Parse(html string) (*Seller, error) {
 					information.Address = addresses[0]
 				}
 			}
+			s.Information = information
 
 			// Feedback
+			feedback := SellerFeedback{}
+			replacer := strings.NewReplacer("%", "", "-", "")
 			doc.Find("#feedback-summary-table tr").Each(func(i int, selection *goquery.Selection) {
 				if i != 0 {
 					var v1, v2, v3, v4 float64
 					selection.Find("td").Each(func(i int, selection *goquery.Selection) {
-						s := strings.TrimSpace(selection.Text())
-						s = replacer.Replace(s)
-						if s != "" {
-							v, _ := strconv.ParseFloat(s, 64)
+						value := replacer.Replace(strings.TrimSpace(selection.Text()))
+						if value != "" {
+							v, _ := strconv.ParseFloat(value, 64)
 							switch i {
 							case 1:
 								v1 = v
@@ -172,13 +171,12 @@ func (s *Seller) Parse(html string) (*Seller, error) {
 					}
 				}
 			})
+			s.Feedback = feedback
 		} else {
 			err = e
 		}
-		s.Information = information
-		s.Feedback = feedback
 	} else {
 		err = errors.New("html is empty")
 	}
-	return s, err
+	return
 }

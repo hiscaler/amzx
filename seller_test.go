@@ -65,16 +65,15 @@ func TestSellerParse(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		s := Seller{}
 		html, err := os.ReadFile("./testdata/" + testCase.File)
 		if err != nil {
 			t.Errorf("Read %s file error: %s", testCase.File, err.Error())
 		}
 
-		ss, err := s.Parse(string(html))
+		seller, err := SellerParse(string(html))
 		if err != nil {
 			t.Errorf("%s parse error: %s", testCase.File, err.Error())
 		}
-		assert.Equal(t, testCase.Excepted, *ss, testCase.File)
+		assert.Equal(t, testCase.Excepted, seller, testCase.File)
 	}
 }
