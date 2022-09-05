@@ -94,6 +94,7 @@ func SellerParse(html string) (s Seller, err error) {
 		}
 	})
 
+	// Set information values
 	if len(addresses) > 0 {
 		country := addresses[len(addresses)-1]
 		information.Country = country
